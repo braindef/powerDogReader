@@ -74,12 +74,20 @@ def getValue(filename, column):
     #print value
         with open(filename, 'r') as myfile:
             
-            lastLine = list(myfile)[-1]
-            if debug: print lastLine
+            maximumTime =  0
+            maximumTimeValue = 0
+            n=0
+            for line in myfile:
+                n+=1                #header der datei wegschneiden
+                if n>1:
+                    if line.split(";")[0]>maximumTime:
+                        maximumTime = line.split(";")[0];
+                        maximumTimeValue = line.split(";")[allValues.index(column)]
+
+            #lastLine = list(myfile)[-1]
+            #if debug: print lastLine      #last line geht nicht weil das ganze zeug komplett unsortiert daher kommt
             
-            returnValue = lastLine.split(";")[allValues.index(column)]
-            
-            return returnValue
+            return maximumTimeValue
 
 
 
