@@ -12,7 +12,7 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 
 
-debug = True
+debug = False
 
 
 #Adresse der Webseite(n)
@@ -65,16 +65,19 @@ def parseArgs():
                 files = glob.glob(args.file+'_global_*.txt')
                 filename = max(files, key = os.path.getctime)
                 if debug: print filename
-                print allValues.index(args.value) #die spalte in der CSV also z.B. bei pdc die 6. spalte
+                if debug: print str(args.value) + " = " + str(allValues.index(args.value)) #die spalte in der CSV also z.B. bei pdc die 6. spalte
                 print getValue(filename,args.value)
 
 def getValue(filename, column):
     #print value
         with open(filename, 'r') as myfile:
-            #for line in fin:
-            #print (list(myfile)[-1]).split(";")[allValues.index(column)]
-            #print fin.next()
-            return (list(myfile)[-1]).split(";")[allValues.index(column)]
+            
+            lastLine = list(myfile)[-1]
+            if debug: print lastLine
+            
+            returnValue = lastLine.split(";")[allValues.index(column)]
+            
+            return returnValue
 
 
 
