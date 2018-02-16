@@ -12,8 +12,8 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 
 
-#debug = False
-debug = True
+debug = False
+#debug = True
 
 
 #Adresse der Webseite(n)
