@@ -12,7 +12,8 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 
 
-debug = False
+#debug = False
+debug = True
 
 
 #Adresse der Webseite(n)
@@ -55,6 +56,7 @@ currentHour = time.strftime("%Y%m%d%H")+str(int(time.strftime("%M"))/10)
 def parseArgs():
 	parser = argparse.ArgumentParser(description='Liest Werte aus Powerdog FTP Daten aus z.B: $ python get.py --file "B2_A2_S1"')
 	#parser.add_argument('--csv', action="store_true", default=False, help='gibt alle Daten als CSV aus')
+        parser.add_argument('--path', action="store", dest="path", help='gibt den zu verwendenden Pfad an, z.B. /home/toni')
         parser.add_argument('--file', action="store", dest="file", help='gibt die CSV Datei an, Parameter: B2_A2_S1')
         parser.add_argument('--value', action="store", dest="value", help='gibt den wert an, pac, pdc, udc...')
 	args = parser.parse_args()
@@ -62,7 +64,7 @@ def parseArgs():
                 filelist = glob.glob(args.file+"_global_*")
                 if debug: print filelist
                 if debug: print sorted(filelist) #ah der dämliche powerDOG lässt sich nicht mal sortieren weil die leading zeros fehlen, NERV...
-                files = glob.glob(args.file+'_global_*.txt')
+                files = glob.glob(args.path +"/"+ args.file+'_global_*.txt')
                 filename = max(files, key = os.path.getctime)
                 if debug: print filename
                 if debug: print str(args.value) + " = " + str(allValues.index(args.value)) #die spalte in der CSV also z.B. bei pdc die 6. spalte
