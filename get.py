@@ -5,10 +5,14 @@ import os.path
 import requests
 import sys
 import re
+import glob
 
 #auf UTF-8 Zeichensatz einstellen
 reload(sys)
 sys.setdefaultencoding('utf8')
+
+
+debug = True
 
 
 #Adresse der Webseite(n)
@@ -40,7 +44,7 @@ filenameCSV = './Heizung_'+currentMonth+'.csv'
 
 #Aktueller Zeitstempel, da sich die Heizung träge verhält macht es keinen Sinn mehr als 1x alle 10 Min abzufragen
 currentHour = time.strftime("%Y%m%d%H")+str(int(time.strftime("%M"))/10)
-filename = './'+currentMonth+'/'+currentHour+'.dump'
+#filename = './'+currentMonth+'/'+currentHour+'.dump'
 #print filename
 
 #print filename
@@ -55,18 +59,22 @@ def parseArgs():
         parser.add_argument('--value', action="store", dest="value", help='gibt den wert an, pac, pdc, udc...')
 	args = parser.parse_args()
 	if not (args.file is None):
-	        filename = (args.file+"_global_"+time.strftime("%-m")+"_"+time.strftime("%d")+"_"+time.strftime("%Y")+".txt")
-                print filename
+                filelist = glob.glob(args.file+"_global_*")
+                if debug: print filelist
+                if debug: print sorted(filelist) #ah der dämliche powerDOG lässt sich nicht mal sortieren weil die leading zeros fehlen, NERV...
+                files = glob.glob(args.file+'_global_*.txt')
+                filename = max(files, key = os.path.getctime)
+                if debug: print filename
                 print allValues.index(args.value) #die spalte in der CSV also z.B. bei pdc die 6. spalte
                 print getValue(filename,args.value)
 
 def getValue(filename, column):
     #print value
-        with open(filename, 'r') as fin:
-            for line in fin:
-
-                print fin.next()
-                return fin.next().split(";")[allValues.index(column)]
+        with open(filename, 'r') as myfile:
+            #for line in fin:
+            #print (list(myfile)[-1]).split(";")[allValues.index(column)]
+            #print fin.next()
+            return (list(myfile)[-1]).split(";")[allValues.index(column)]
 
 
 
