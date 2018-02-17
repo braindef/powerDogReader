@@ -69,17 +69,17 @@ myRRD.bufferValue('920808900', '12423')
 myRRD.update()
 
 # Let's set up the objects that will be added to the graph
-def1 = DEF(rrdfile=myRRD.filename, vname='myspeed', dsName=ds1.name)
-#cdef1 = CDEF(vname='kmh', rpn='%s,3600,*' % def1.vname)
-#vdef1 = VDEF(vname='mymax', rpn='%s,MAXIMUM' % def1.vname)
+def1 = DEF(rrdfile=myRRD.filename, vname='kW', dsName=ds1.name)
+cdef1 = CDEF(vname='kmh', rpn='%s,3600,*' % def1.vname)
+vdef1 = VDEF(vname='mymax', rpn='%s,MAXIMUM' % def1.vname)
 line1 = LINE(value=100, color='#990000', legend='Maximum Allowed')
-#area1 = AREA(defObj=cdef1, color='#006600', legend='Good Speed')
-#gprint1 = GPRINT(vdef1, '%6.2lf kph')
+area1 = AREA(defObj=cdef1, color='#006600', legend='Good Speed')
+gprint1 = GPRINT(vdef1, '%6.2lf kph')
 #gprint1 = GPRINT(def1, '%6.2lf kph')
 
 # Now that we've got everything set up, let's make a graph
 g = Graph(graphfile, start=920805000, end=920810000, vertical_label='km/h')
-#g.data.extend([def1, cdef1,  vdef1,  line1, area1, gprint1])
-g.data.extend([def1,  line1 ])
+g.data.extend([def1, cdef1,  vdef1,  line1, area1, gprint1])
+#g.data.extend([def1,  line1 ])
 g.write()
 
