@@ -3,4 +3,12 @@ TODO
 -Daemon schreiben der den powerDOGreader periodisch aufruft
 -Allenfalls dann umbennenen in PowerDOG-Grapher oder Solar-Grapher
 -RRD implementieren
+-Model Device Function basierend an Hand von einem vorgegebenen FTP Upload Verzeichnisses
+-Import / Export function ? RRD to CSV
+ -> rrdtool dump example1.rrd
+
+-wieviele werte aufzeichnen und ab wann konsolidieren, z.B. 1 Jahr aufzeichen, 10 Jahre Konsolidieren?
+
+-Zoom-Funktion wie bei zabbix
+ ->prerequisites: on the fly generieren des RRD's
 
