@@ -28,7 +28,7 @@ maxSteps = int((endTime-startTime)/step)
 
 # Let's create and RRD file and dump some data in it
 dss = []
-ds1 = DS(dsName='speed', dsType='GAUGE', heartbeat=300)
+ds1 = DS(dsName='kW', dsType='GAUGE', heartbeat=300)
 dss.append(ds1)
 
 rras = []

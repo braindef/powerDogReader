@@ -10,6 +10,7 @@ from pyrrd.rrd import RRD
 myRRD = RRD('A1_B1_S14.rrd')
 
 myRRD.bufferValue(time.time(),  10000)
+#myRRD.bufferValue(1518825600,  10000)
 myRRD.update()
 
 myRRD.info()
