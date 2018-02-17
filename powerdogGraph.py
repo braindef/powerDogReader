@@ -49,12 +49,13 @@ vdef1 = VDEF(vname='mymax', rpn='%s,MAXIMUM' % def1.vname)
 vdef2 = VDEF(vname='myavg', rpn='%s,AVERAGE' % def1.vname)
 line1 = LINE(value=100, color='#990000', legend='Maximum Allowed')
 area1 = AREA(defObj=cdef3, color='#006600', legend='Good Speed')
-area2 = AREA(defObj=cdef2, color='#CC6633', legend='Too Fast')
+#area2 = AREA(defObj=cdef2, color='#CC6633', legend='Too Fast')
 line2 = LINE(defObj=vdef2, color='#000099', legend='My Average', stack=True)
 gprint1 = GPRINT(vdef2, '%6.2lf kph')
 
 # Now that we've got everything set up, let's make a graph
 g = Graph(graphfile, start=920805000, end=920810000, vertical_label='km/h')
-g.data.extend([def1, cdef1, cdef2, cdef3, vdef1, vdef2, line1, area1, area2, line2, gprint1])
+#g.data.extend([def1, cdef1, cdef2, cdef3, vdef1, vdef2, line1, area1, area2, line2, gprint1])
+g.data.extend([def1, cdef1, cdef2, cdef3, vdef1, vdef2, line1, area1, line2, gprint1])
 g.write()
 
