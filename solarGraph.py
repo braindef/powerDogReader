@@ -13,8 +13,6 @@ from pyrrd.graph import DEF, CDEF, VDEF
 from pyrrd.graph import LINE, AREA, GPRINT
 from pyrrd.graph import ColorAttributes, Graph
 
-import get as powerDogGet
-
 #auf UTF-8 Zeichensatz einstellen
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -24,9 +22,9 @@ sys.setdefaultencoding('utf8')
 debug = True
 
 
-exampleNum = "temp"
-filename = 'A1_B1_S1%s.rrd' % exampleNum
-graphfile = 'A1_B1_S1%s.png' % exampleNum
+#exampleNum = "temp"
+#filename = 'A1_B1_S1%s.rrd' % exampleNum
+#graphfile = 'A1_B1_S1%s.png' % exampleNum
 
 day = 24 * 60 * 60
 week = 7 * day
@@ -53,42 +51,45 @@ allGraphValues =  ["pac","pdc","udc","temp"]
 
 #Eingabeparameter verarbeiten
 # Instantiate the parser
-def parseArgs():
+def selfParseArgs():
 	parser = argparse.ArgumentParser(description='Liest Werte aus Powerdog FTP Daten aus z.B: $ python get.py --file "B2_A2_S1"')
-	#parser.add_argument('--csv', action="store_true", default=False, help='gibt alle Daten als CSV aus')
+        
         parser.add_argument('--create', action="store_true", dest="create", help='gibt an dass die RRD Files und das Configfile generiert werden')
         parser.add_argument('--update', action="store_true", dest="update", help='gibt an dass ein neuer Wert hinzugefügt werden soll')
         parser.add_argument('--render', action="store_true", dest="render", help='gibt an dass die Grafik(en) gerendert werden sollen')
 
         parser.add_argument('--config', action="store", dest="configfile", help='gibt den Pfad des Configfiles an')
 
-
 	args = parser.parse_args()
-	if not (args.create is None and args.update is None and args.graph is None):
-                filelist = glob.glob(args.file+"_global_*")
-                if debug: print filelist
-                if debug: print sorted(filelist) #ah der dämliche powerDOG lässt sich nicht mal sortieren weil die leading zeros fehlen, NERV...
-                files = glob.glob(args.path +"/"+ args.file+'_global_*.txt')
-                filename = max(files, key = os.path.getctime)
-                if debug: print filename
-                if debug: print str(args.value) + " = " + str(allValues.index(args.value)) #die spalte in der CSV also z.B. bei pdc die 6. spalte
-                print getValue(filename,args.value)
+
+        if not (args.create is None and args.update is None and args.graph is None):
+            print "bitte angeben ob --create, --update oder --render"
+        
+        if args.create is True:
+            print "Create"
+            createAll()
+
+        if args.update is True:
+            updateAll()
+
+        if args.render is True:
+            renderAll()
 
 def createAll():
 	for i in allStrings:
 		for j in allGraphValues:
-			create(i, j)
+			create(basepath+i, j)
 
 def updateAll():
 	for i in allStrings:
 		for j in allGraphValues:
-			update(i, powerDogGet(i, j))
+			update(basepath+i+"_"+j+".rrd", getValue(i, j))
 	
 
 def renderAll():
 	for i in allStrings:
 		for j in allGraphValues:
-			render(i, j)
+			render(basepath+i, j)
 
 
 
@@ -145,7 +146,7 @@ def render(filename, value):
 
 	# Now that we've got everything set up, let's make a graph
 	startTime = endTime - 2 * day
-	g = Graph(graphfile, start=startTime, end=endTime, vertical_label='data', color=ca)
+	g = Graph(filename+"_"+value+".pdf", start=startTime, end=endTime, vertical_label='data', color=ca)
 	g.data.extend([def1, area1])
 
 	g.filename = filename+"_"+value+".rrd"
@@ -154,7 +155,30 @@ def render(filename, value):
 	g.write()
 
 
+def getValue(filename, column):
+    #print value
+        with open(filename, 'r') as myfile:
+
+            maximumTime =  0
+            maximumTimeValue = 0
+            n=0
+            for line in myfile:
+                n+=1                #header der datei wegschneiden
+                if n>1:
+                    if line.split(";")[0]>maximumTime:
+                        maximumTime = line.split(";")[0];
+                        maximumTimeValue = line.split(";")[allValues.index(column)]
+
+            #lastLine = list(myfile)[-1]
+            #if debug: print lastLine      #last line geht nicht weil das ganze zeug komplett unsortiert daher kommt
+            
+            return maximumTimeValue
+
+
+
+
+
 #getAllStrings()
-parseArgs()
+selfParseArgs()
 
 
