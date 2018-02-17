@@ -12,3 +12,8 @@ TODO
 -Zoom-Funktion wie bei zabbix
  ->prerequisites: on the fly generieren des RRD's
 
+-unterteilen in 
+ * PowerDOG Create RRD
+ * PowerDOG Update RRD
+ * PowerDOG Graph RRD
+
