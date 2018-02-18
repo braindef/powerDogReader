@@ -5,6 +5,10 @@ background: #282828;
 color: #ffffff; 
 font-family: monospace; }
 
+div {
+	float: right;
+}
+
 /* unvisited link */
 a:link {
     color: #FFFFFF;

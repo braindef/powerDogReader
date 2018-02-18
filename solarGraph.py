@@ -149,7 +149,7 @@ def render(filename, value):
 	ca.arrow = '#FFFFFF'
 
 	# Now that we've got everything set up, let's make a graph
-	startTime = endTime - (5 * 60 * 60)
+	startTime = endTime - (10 * 60 * 60) #10h anzeigen
 	#g = Graph(filename+"_"+value+".png", start=startTime, end=endTime, vertical_label='data2')
 	g = Graph(filename+"_"+value+".png", start=startTime, end=endTime, vertical_label='data2', color=ca)
 	g.data.extend([def1, area1,line1])
