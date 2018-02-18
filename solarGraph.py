@@ -34,7 +34,7 @@ half = 365 * day / 2
 year = 365 * day
 
 endTime = int(round(time.time()))
-delta = 2* day
+delta = 2 * day
 startTime = endTime - delta
 step = 300
 maxSteps = int((endTime-startTime)/step)
@@ -45,7 +45,7 @@ basepath = "/home/toni/"
 #PowerDOG String selection
 allStrings = ["B2_A2_S1","B2_A2_S2","B2_A3_S1","B2_A3_S2"]
 
-#Powerdog File selection
+#Powerdog File selection, die anderen files werden aus diesen konsolidiert von Powerdog
 allFiles = ["global","event"]
 
 #PowerDOG Value Selection
@@ -54,42 +54,48 @@ allGraphValues =  ["pac","pdc","udc","temp"]
 
 #Eingabeparameter verarbeiten
 # Instantiate the parser
-def selfParseArgs():
+def parseArgs():
 	parser = argparse.ArgumentParser(description='Liest Werte aus Powerdog FTP Daten aus z.B: $ python get.py --file "B2_A2_S1"')
         
         parser.add_argument('--create', action="store_true", dest="create", help='gibt an dass die RRD Files und das Configfile generiert werden')
         parser.add_argument('--update', action="store_true", dest="update", help='gibt an dass ein neuer Wert hinzugefügt werden soll')
         parser.add_argument('--render', action="store_true", dest="render", help='gibt an dass die Grafik(en) gerendert werden sollen')
 
+        #noch nicht implementiert
         parser.add_argument('--config', action="store", dest="configfile", help='gibt den Pfad des Configfiles an')
 
 	args = parser.parse_args()
 
-        if not (args.create is None and args.update is None and args.graph is None):
+        if (args.create is None and args.update is None and args.graph is None):
             print "bitte angeben ob --create, --update oder --render"
         
         if args.create is True:
-            print "Create"
+            if debug: print "Create"
             createAll()
 
         if args.update is True:
+            if debug: print "Update"
             updateAll()
 
         if args.render is True:
+            if debug: print "Render"
             renderAll()
 
 def createAll():
+        if debug: print "Enter Function createAll()"
 	for i in allStrings:
 		for j in allGraphValues:
 			create(basepath+i, j)
 
 def updateAll():
+        if debug: print "Enter Function updateAll()"
 	for i in allStrings:
 		for j in allGraphValues:
                         if debug: print ("updateAll"+basepath+i)
 			update(basepath+i, j )
 
 def renderAll():
+        if debug: print "Enter Function createAll()"
 	for i in allStrings:
 		for j in allGraphValues:
 			render(basepath+i, j)
@@ -97,6 +103,7 @@ def renderAll():
 
 
 def create(filename, value):
+        if debug: print "Enter Function create(filename, value)"
 	# Let's create and RRD file and dump some data in it
 	dss = []
 	ds1 = DS(dsName='kW', dsType='GAUGE', heartbeat=600)
@@ -123,6 +130,7 @@ def create(filename, value):
 
 
 def update(filename, value):
+        if debug: print "Enter Function update(filename, value)"
 	myRRD = RRD(filename+"_"+value+".rrd")
 	myRRD.bufferValue(time.time(), getValue(filename, value))          #DAS DANN WIEDER äNDERN
 	#myRRD.bufferValue(time.time(), 9000)
@@ -131,6 +139,7 @@ def update(filename, value):
 
 
 def render(filename, value):
+        if debug: print "Enter Function render(filename, value)"
 # Let's set up the objects that will be added to the graph
 	def1 = DEF(rrdfile=filename+"_"+value+".rrd", vname='kW', dsName="kW")  #command fetches data from the rrd
 	area1 = AREA(defObj=def1, color='#FFA902', legend='kW')
@@ -160,6 +169,7 @@ def render(filename, value):
 
 
 def getValue(filename, column):
+    if debug: print "Enter Function getValue(filename, column)"
     #print value
     if debug: print filename
     files = glob.glob(filename+'_global_*.txt')
@@ -190,6 +200,6 @@ def getValue(filename, column):
 
 
 #getAllStrings()
-selfParseArgs()
+parseArgs()
 
 
