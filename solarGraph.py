@@ -18,8 +18,8 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 
 
-#debug = False
-debug = True
+debug = False
+#debug = True
 
 
 #exampleNum = "temp"
@@ -99,7 +99,7 @@ def renderAll():
 def create(filename, value):
 	# Let's create and RRD file and dump some data in it
 	dss = []
-	ds1 = DS(dsName='kW', dsType='GAUGE', heartbeat=300)
+	ds1 = DS(dsName='kW', dsType='GAUGE', heartbeat=600)
 	dss.append(ds1)
 
 	rras = []
@@ -118,21 +118,23 @@ def create(filename, value):
 	myRRD.create()
 
 	myRRD.update()
-	myRRD.info()
+        if debug: myRRD.info()
 
 
 
 def update(filename, value):
 	myRRD = RRD(filename+"_"+value+".rrd")
-	myRRD.bufferValue(time.time(), getValue(filename, value))
+	#myRRD.bufferValue(time.time(), getValue(filename, value))          #DAS DANN WIEDER äNDERN
+	myRRD.bufferValue(time.time(), 9000)
 	myRRD.update()
-	myRRD.info()
+        if debug: myRRD.info()
 
 
 def render(filename, value):
 # Let's set up the objects that will be added to the graph
-	def1 = DEF(rrdfile=filename+"_"+value+".rrd", vname='kW', dsName="kW")
+	def1 = DEF(rrdfile=filename+"_"+value+".rrd", vname='kW', dsName="kW")  #command fetches data from the rrd
 	area1 = AREA(defObj=def1, color='#FFA902', legend='kW')
+        line1 = LINE(value=100, color='#990000', legend='Maximum Allowed')
 
 	# Let's configure some custom colors for the graph
 	ca = ColorAttributes()
@@ -147,11 +149,11 @@ def render(filename, value):
 	ca.arrow = '#FFFFFF'
 
 	# Now that we've got everything set up, let's make a graph
-	startTime = endTime - 2 * day
-	g = Graph(filename+"_"+value+".png", start=startTime, end=endTime, vertical_label='data', color=ca)
-	g.data.extend([def1, area1])
+	startTime = endTime - (5 * 60 * 60)
+	#g = Graph(filename+"_"+value+".png", start=startTime, end=endTime, vertical_label='data2')
+	g = Graph(filename+"_"+value+".png", start=startTime, end=endTime, vertical_label='data2', color=ca)
+	g.data.extend([def1, area1,line1])
 
-	g.filename = filename+"_"+value+".png"
 	g.width = 800
 	g.height = 400
 	g.write()
@@ -159,10 +161,10 @@ def render(filename, value):
 
 def getValue(filename, column):
     #print value
-    print filename
+    if debug: print filename
     files = glob.glob(filename+'_global_*.txt')
     
-    print files
+    if debug: print files
     filename2 = max(files, key = os.path.getctime)
 
 
