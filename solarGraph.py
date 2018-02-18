@@ -17,14 +17,10 @@ from pyrrd.graph import ColorAttributes, Graph
 reload(sys)
 sys.setdefaultencoding('utf8')
 
-
+#debug variable, auf True wird mehr debug info angezeigt
 debug = False
 #debug = True
 
-
-#exampleNum = "temp"
-#filename = 'A1_B1_S1%s.rrd' % exampleNum
-#graphfile = 'A1_B1_S1%s.png' % exampleNum
 
 day = 24 * 60 * 60
 week = 7 * day
@@ -39,7 +35,7 @@ startTime = endTime - delta
 step = 300
 maxSteps = int((endTime-startTime)/step)
 
-
+#in welchem Verzeichnis wir die Powerdog FTP Daten holen
 basepath = "/home/toni/"
 
 #PowerDOG String selection
@@ -55,6 +51,8 @@ allGraphValues =  ["pac","pdc","udc","temp"]
 #Eingabeparameter verarbeiten
 # Instantiate the parser
 def parseArgs():
+
+        #kommando parameter anzeigen und auswählen
 	parser = argparse.ArgumentParser(description='Liest Werte aus Powerdog FTP Daten aus z.B: $ python get.py --file "B2_A2_S1"')
         
         parser.add_argument('--create', action="store_true", dest="create", help='gibt an dass die RRD Files und das Configfile generiert werden')
@@ -78,8 +76,14 @@ def parseArgs():
             updateAll()
 
         if args.render is True:
+            #TODO start und end Timestamp angeben
             if debug: print "Render"
             renderAll()
+
+
+def getAllStrings():
+    #TODO: ist im moment noch statisch angegeben, einen default wert von einem Tag wenn nichts angegeben
+
 
 def createAll():
         if debug: print "Enter Function createAll()"
@@ -106,10 +110,10 @@ def create(filename, value):
         if debug: print "Enter Function create(filename, value)"
 	# Let's create and RRD file and dump some data in it
 	dss = []
-	ds1 = DS(dsName='kW', dsType='GAUGE', heartbeat=600)
+	ds1 = DS(dsName='kW', dsType='GAUGE', heartbeat=600) #alle 10 Minuten einen Wert
 	dss.append(ds1)
 
-	rras = []
+        rras = [] #round robin archives mit, xff=0.5 also wenn 20 Minuten kein wert kommt wirds leer angezeigt:
 	rra1 = RRA(cf='AVERAGE', xff=0.5, steps=1, rows=144) #alle 10 Minuten ein Wert
 	rra2 = RRA(cf='AVERAGE', xff=0.5, steps=6, rows=24)  #24h mal 1h
 	rra3 = RRA(cf='AVERAGE', xff=0.5, steps=24, rows=30) #30 Tage mal 24h
@@ -121,6 +125,7 @@ def create(filename, value):
 	rras.append(rra4)
 	rras.append(rra5)
 
+        #round robbin database file anlegen mit der Startzeit startTime (jetzt)
 	myRRD = RRD(filename+"_"+value+".rrd", ds=dss, rra=rras, start=startTime)
 	myRRD.create()
 
@@ -131,19 +136,25 @@ def create(filename, value):
 
 def update(filename, value):
         if debug: print "Enter Function update(filename, value)"
+        
+        #round robbing database file öffnen
 	myRRD = RRD(filename+"_"+value+".rrd")
-	myRRD.bufferValue(time.time(), getValue(filename, value))          #DAS DANN WIEDER äNDERN
-	#myRRD.bufferValue(time.time(), 9000)
+
+	#Wert in round robbin database eintragen
+        myRRD.bufferValue(time.time(), getValue(filename, value))          #DAS DANN WIEDER äNDERN
 	myRRD.update()
         if debug: myRRD.info()
 
 
 def render(filename, value):
         if debug: print "Enter Function render(filename, value)"
-# Let's set up the objects that will be added to the graph
-	def1 = DEF(rrdfile=filename+"_"+value+".rrd", vname='kW', dsName="kW")  #command fetches data from the rrd
+	
+        #balken zeichnen
+        def1 = DEF(rrdfile=filename+"_"+value+".rrd", vname='kW', dsName="kW")  #command fetches data from the rrd
 	area1 = AREA(defObj=def1, color='#FFA902', legend='kW')
-        line1 = LINE(value=100, color='#990000', legend='Maximum Allowed')
+        
+        #mittelwert linie zeichnen (muss noch berechnet werden
+        line1 = LINE(value=100, color='#990000', legend='Average')
 
 	# Let's configure some custom colors for the graph
 	ca = ColorAttributes()
@@ -158,27 +169,28 @@ def render(filename, value):
 	ca.arrow = '#FFFFFF'
 
 	# Now that we've got everything set up, let's make a graph
-	startTime = endTime - (10 * 60 * 60) #10h anzeigen
-	#g = Graph(filename+"_"+value+".png", start=startTime, end=endTime, vertical_label='data2')
-	g = Graph(filename+"_"+value+".png", start=startTime, end=endTime, vertical_label='data2', color=ca)
-	g.data.extend([def1, area1,line1])
+	startTime = endTime - (10 * 60 * 60) #10h anzeigen, sollte noch variabel sein
+	g = Graph(filename+"_"+value+".png", start=startTime, end=endTime, vertical_label='data', color=ca)
+	g.data.extend([def1, area1, line1])
 
 	g.width = 800
 	g.height = 400
 	g.write()
 
 
-def getValue(filename, column):
+def getValue(filenameWithPath, column):
     if debug: print "Enter Function getValue(filename, column)"
-    #print value
-    if debug: print filename
-    files = glob.glob(filename+'_global_*.txt')
     
+    #alle dateien des Strings (im sinne von Solaranlagen String) finden
+    if debug: print filename
+    files = glob.glob( filenameWithPath + '_global_*.txt')
+    
+    #die neuste datei wählen
     if debug: print files
-    filename2 = max(files, key = os.path.getctime)
+    filename = max(files, key = os.path.getctime)
 
 
-    with open(filename2, 'r') as myfile:
+    with open(filename, 'r') as myfile:
 
             maximumTime =  0
             maximumTimeValue = 0
@@ -198,8 +210,6 @@ def getValue(filename, column):
 
 
 
-
-#getAllStrings()
 parseArgs()
 
 
