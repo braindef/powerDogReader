@@ -148,10 +148,10 @@ def render(filename, value):
 
 	# Now that we've got everything set up, let's make a graph
 	startTime = endTime - 2 * day
-	g = Graph(filename+"_"+value+".pdf", start=startTime, end=endTime, vertical_label='data', color=ca)
+	g = Graph(filename+"_"+value+".png", start=startTime, end=endTime, vertical_label='data', color=ca)
 	g.data.extend([def1, area1])
 
-	g.filename = filename+"_"+value+".rrd"
+	g.filename = filename+"_"+value+".png"
 	g.width = 800
 	g.height = 400
 	g.write()
