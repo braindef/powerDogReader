@@ -83,7 +83,7 @@ def parseArgs():
 
 def getAllStrings():
     #TODO: ist im moment noch statisch angegeben, einen default wert von einem Tag wenn nichts angegeben
-
+    print "Not yet implemented"
 
 def createAll():
         if debug: print "Enter Function createAll()"
