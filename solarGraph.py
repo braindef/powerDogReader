@@ -39,6 +39,9 @@ startTime = endTime - delta
 step = 300
 maxSteps = int((endTime-startTime)/step)
 
+
+basepath = "/home/toni/"
+
 #PowerDOG String selection
 allStrings = ["B2_A2_S1","B2_A2_S2","B2_A3_S1","B2_A3_S2"]
 
@@ -83,8 +86,8 @@ def createAll():
 def updateAll():
 	for i in allStrings:
 		for j in allGraphValues:
-			update(basepath+i+"_"+j+".rrd", getValue(i, j))
-	
+                        if debug: print ("updateAll"+basepath+i)
+			update(basepath+i, j )
 
 def renderAll():
 	for i in allStrings:
@@ -121,15 +124,14 @@ def create(filename, value):
 
 def update(filename, value):
 	myRRD = RRD(filename+"_"+value+".rrd")
-	myRRD.bufferValue(time.time(),  powerDogGet(filename, value))
-	print powerDogGet(filename, value)
+	myRRD.bufferValue(time.time(), getValue(filename, value))
 	myRRD.update()
 	myRRD.info()
 
 
 def render(filename, value):
 # Let's set up the objects that will be added to the graph
-	def1 = DEF(rrdfile=filename+".rrd", vname='kW', dsName="kW")
+	def1 = DEF(rrdfile=filename+"_"+value+".rrd", vname='kW', dsName="kW")
 	area1 = AREA(defObj=def1, color='#FFA902', legend='kW')
 
 	# Let's configure some custom colors for the graph
@@ -157,7 +159,14 @@ def render(filename, value):
 
 def getValue(filename, column):
     #print value
-        with open(filename, 'r') as myfile:
+    print filename
+    files = glob.glob(filename+'_global_*.txt')
+    
+    print files
+    filename2 = max(files, key = os.path.getctime)
+
+
+    with open(filename2, 'r') as myfile:
 
             maximumTime =  0
             maximumTimeValue = 0
