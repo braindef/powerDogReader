@@ -124,8 +124,8 @@ def create(filename, value):
 
 def update(filename, value):
 	myRRD = RRD(filename+"_"+value+".rrd")
-	#myRRD.bufferValue(time.time(), getValue(filename, value))          #DAS DANN WIEDER äNDERN
-	myRRD.bufferValue(time.time(), 9000)
+	myRRD.bufferValue(time.time(), getValue(filename, value))          #DAS DANN WIEDER äNDERN
+	#myRRD.bufferValue(time.time(), 9000)
 	myRRD.update()
         if debug: myRRD.info()
 

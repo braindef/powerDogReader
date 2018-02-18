@@ -1,6 +1,7 @@
 <html>
   <head>
     <meta charset="utf-8">
+    <meta http-equiv="refresh" content="30">
 <link rel="stylesheet" type="text/css" href="../doc/small-style.css" target="_blank">
 
 
