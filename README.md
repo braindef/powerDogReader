@@ -22,3 +22,6 @@ index.php lädt die Bilder alle 30 Sekunden
 
 **python get.py --path /home/toni --file B2_A2_S2 --value pac**
 
+
+Erste Resultate:
+![First Results](https://raw.githubusercontent.com/braindef/powerDogReader/master/firstResults.png "First Results")
