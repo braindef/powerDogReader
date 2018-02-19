@@ -123,7 +123,7 @@ def createAll():
 
 def createAllFromHistory():
 
-
+    createAll()
     if debug: print "Enter Function createAllFromHistory()"
     print "ALLSTRINGS: " + str(allStrings)
     for stringName in allStrings:
@@ -149,10 +149,10 @@ def createAllFromHistory():
                 print str(y)+"-"+str(m)
                 for d in range(1,32):
                     print str(y)+"-"+str(m)+"-"+str(d)
-                    parseFile(baseDir + stringName + "_global_" + str(m) + "_" + str(d) + "_" + str(y) + ".txt")
+                    parseDataFile(baseDir + stringName + "_global_" + str(m) + "_" + str(d) + "_" + str(y) + ".txt")
 
 
-def parseFile(filename):
+def parseDataFile(filename):
     if os.path.exists(filename):
         print "Parsing: " + filename
         for key in allGraphValues:
@@ -162,6 +162,7 @@ def parseFile(filename):
                 lines = f.readlines()
             lines.sort()
             for line in lines:
+                if "timestamp" in line: continue
                 for key in allGraphValues:
                     print line.split(";")[0]
                     print line.split(";")[allValues.index(key)]
@@ -202,7 +203,8 @@ def create(stringName, key):
 	rras.append(rra5)
 
         #round robbin database file anlegen mit der Startzeit startTime (jetzt)
-	myRRD = RRD(baseDir + stringName + "_" + key + ".rrd", ds=dss, rra=rras, start=startTime)
+	#myRRD = RRD(baseDir + stringName + "_" + key + ".rrd", ds=dss, rra=rras, start=startTime)
+	myRRD = RRD(baseDir + stringName + "_" + key + ".rrd", ds=dss, rra=rras, start=1483228800)
 	myRRD.create()
 
 	myRRD.update()
@@ -217,8 +219,12 @@ def update(stringName, timestamp, key, value):
 	myRRD = RRD(baseDir + stringName + "_" + key + ".rrd")
 
 	#Wert in round robbin database eintragen
-        myRRD.bufferValue(timestamp, value)
-	myRRD.update()
+        try:
+            myRRD.bufferValue(timestamp, value)
+	    myRRD.update()
+        except:
+            print "value in the past"
+        
         if debug: myRRD.info()
 
 
