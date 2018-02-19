@@ -40,7 +40,7 @@ step = 300
 maxSteps = int((endTime-startTime)/step)
 
 #in welchem Verzeichnis wir die Powerdog FTP Daten holen
-basepath = "/home/toni2/"
+baseDir = "/home/toni/"
 
 #PowerDOG String selection
 allStrings = []
@@ -96,7 +96,7 @@ def parseArgs():
             if debug: print "getStrings()"
             getAllStrings()
 
-
+"""Korrigiert"""
 def getAllStrings():
     print "Enter Function getAllStrings()"
 
@@ -104,7 +104,7 @@ def getAllStrings():
 
     mylist = []
 
-    files = glob.glob( basepath+'B*.txt')
+    files = glob.glob( baseDir+'B*.txt')
     #if debug: print files
     for file in files:
         file = os.path.basename(file)
@@ -117,9 +117,9 @@ def getAllStrings():
 
 def createAll():
         if debug: print "Enter Function createAll()"
-	for i in allStrings:
-		for j in allGraphValues:
-			create(basepath+i, j)
+	for stringName in allStrings:
+		for key in allGraphValues:
+			create(stringName, key)
 
 def createAllFromHistory():
 
@@ -131,13 +131,13 @@ def createAllFromHistory():
         months=[]
         days=[]
         print "STRING:" + string
-        files = glob.glob ( basepath + string + "_global_*.txt")
+        files = glob.glob ( baseDir + string + "_global_*.txt")
         print str(string) + ": " + str(files)
         for file in files:
             print os.path.basename(file)
             years.append (os.path.basename(file).split("_")[6][0:4])
         print years
-        files = glob.glob ( basepath + string + "_global_" + "*" + min(years) + ".txt")
+        files = glob.glob ( baseDir + string + "_global_" + "*" + min(years) + ".txt")
         for file in files:
             print os.path.basename(file)
             months.append(os.path.basename(file).split("_")[4])
@@ -149,7 +149,7 @@ def createAllFromHistory():
                 print str(y)+"-"+str(m)
                 for d in range(1,32):
                     print str(y)+"-"+str(m)+"-"+str(d)
-                    parseFile(basepath + string + "_global_" + str(m) + "_" + str(d) + "_" + str(y) + ".txt")
+                    parseFile(baseDir + string + "_global_" + str(m) + "_" + str(d) + "_" + str(y) + ".txt")
 
 
 def parseFile(filename):
@@ -166,21 +166,21 @@ def parseFile(filename):
 
 def updateAll():
         if debug: print "Enter Function updateAll()"
-	for i in allStrings:
-		for j in allGraphValues:
-                        if debug: print ("updateAll"+basepath+i)
-			update(basepath+i, j )
+	for stringName in allStrings:
+		for key in allGraphValues:
+                        if debug: print ("updateAll"+baseDir+stringName+"_"+key)
+			update(stringName, time.time(), key, getCurrentValue(stringName, key) )
 
 def renderAll():
         if debug: print "Enter Function createAll()"
-	for i in allStrings:
-		for j in allGraphValues:
-			render(basepath+i, j)
+	for stringName in allStrings:
+		for key in allGraphValues:
+			render(stringName, key)
 
 
 
-def create(filename, value):
-        if debug: print "Enter Function create(filename, value)"
+def create(stringName, key):
+        if debug: print "Enter Function create(stringName, key)"
 	# Let's create and RRD file and dump some data in it
 	dss = []
 	ds1 = DS(dsName='kW', dsType='GAUGE', heartbeat=600) #alle 10 Minuten einen Wert
@@ -199,34 +199,7 @@ def create(filename, value):
 	rras.append(rra5)
 
         #round robbin database file anlegen mit der Startzeit startTime (jetzt)
-	myRRD = RRD(filename+"_"+value+".rrd", ds=dss, rra=rras, start=startTime)
-	myRRD.create()
-
-	myRRD.update()
-        if debug: myRRD.info()
-
-
-def createFromHistory(filename, value):
-        if debug: print "Enter Function create(filename, value)"
-	# Let's create and RRD file and dump some data in it
-	dss = []
-	ds1 = DS(dsName='kW', dsType='GAUGE', heartbeat=600) #alle 10 Minuten einen Wert
-	dss.append(ds1)
-
-        rras = [] #round robin archives mit, xff=0.5 also wenn 20 Minuten kein wert kommt wirds leer angezeigt:
-	rra1 = RRA(cf='AVERAGE', xff=0.5, steps=1, rows=144) #alle 10 Minuten ein Wert
-	rra2 = RRA(cf='AVERAGE', xff=0.5, steps=6, rows=24)  #24h mal 1h
-	rra3 = RRA(cf='AVERAGE', xff=0.5, steps=24, rows=30) #30 Tage mal 24h
-	rra4 = RRA(cf='AVERAGE', xff=0.5, steps=30, rows=12) #12 Monate mal 30 Tage
-	rra5 = RRA(cf='AVERAGE', xff=0.5, steps=12, rows=10) #10 Jahre mal 12 Monate
-	rras.append(rra1)
-	rras.append(rra2)
-	rras.append(rra3)
-	rras.append(rra4)
-	rras.append(rra5)
-
-        #round robbin database file anlegen mit der Startzeit startTime (jetzt)
-	myRRD = RRD(filename+"_"+value+".rrd", ds=dss, rra=rras, start=startTime)
+	myRRD = RRD(baseDir + stringName + "_" + key + ".rrd", ds=dss, rra=rras, start=startTime)
 	myRRD.create()
 
 	myRRD.update()
@@ -234,37 +207,24 @@ def createFromHistory(filename, value):
 
 
 
-
-def update(filename, value):
-        if debug: print "Enter Function update(filename, value)"
+def update(stringName, timestamp, key, value):
+        if debug: print "Enter Function update(stringName, key, value)"
         
         #round robbing database file öffnen
-	myRRD = RRD(filename+"_"+value+".rrd")
+	myRRD = RRD(baseDir + stringName + "_" + key + ".rrd")
 
 	#Wert in round robbin database eintragen
-        myRRD.bufferValue(time.time(), getCurrentValue(filename, value))
+        myRRD.bufferValue(timestamp, value)
 	myRRD.update()
         if debug: myRRD.info()
 
 
 
-def update(stringFilename, timestamp, valueKey, value):
-        if debug: print "Enter Function update(filename, value)"
-        
-        #round robbing database file öffnen
-	myRRD = RRD(stringFilename+"_"+value+".rrd")
-
-	#Wert in round robbin database eintragen
-        myRRD.bufferValue(timestamp, getCurrentValue(filename, valueKey))
-	myRRD.update()
-        if debug: myRRD.info()
-
-
-def render(filename, value):
+def render(stringName, key):
         if debug: print "Enter Function render(filename, value)"
 	
         #balken zeichnen
-        def1 = DEF(rrdfile=filename+"_"+value+".rrd", vname='kW', dsName="kW")  #command fetches data from the rrd
+        def1 = DEF(rrdfile = baseDir + stringName + "_" + key + ".rrd", vname='kW', dsName="kW")  #command fetches data from the rrd
 	area1 = AREA(defObj=def1, color='#FFA902', legend='kW')
         
         #mittelwert linie zeichnen (muss noch berechnet werden
@@ -284,7 +244,7 @@ def render(filename, value):
 
 	# Now that we've got everything set up, let's make a graph
 	startTime = endTime - (10 * 60 * 60) #10h anzeigen, sollte noch variabel sein
-	g = Graph(filename+"_"+value+".png", start=startTime, end=endTime, vertical_label='data', color=ca)
+	g = Graph(baseDir + stringName + "_" + key + ".png", start=startTime, end=endTime, vertical_label='data', color=ca)
 	g.data.extend([def1, area1, line1])
 
 	g.width = 800
@@ -292,12 +252,12 @@ def render(filename, value):
 	g.write()
 
 
-def getCurrentValue(filenameWithPath, column):
-    if debug: print "Enter Function getCurrentValue(filename, column)"
+def getCurrentValue(stringName, key):
+    if debug: print "Enter Function getCurrentValue(filename, key)"
     
     #alle dateien des Strings (im sinne von Solaranlagen String) finden
-    if debug: print filename
-    files = glob.glob( filenameWithPath + '_global_*.txt')
+    if debug: print baseDir+stringName
+    files = glob.glob( baseDir + stringName + '_global_*.txt')
     
     #die neuste datei wählen
     if debug: print files
@@ -314,7 +274,7 @@ def getCurrentValue(filenameWithPath, column):
                 if n>1:
                     if line.split(";")[0]>maximumTime:
                         maximumTime = line.split(";")[0];
-                        maximumTimeValue = line.split(";")[allValues.index(column)]
+                        maximumTimeValue = line.split(";")[allValues.index(key)]
 
             #lastLine = list(myfile)[-1]
             #if debug: print lastLine      #last line geht nicht weil das ganze zeug komplett unsortiert daher kommt
