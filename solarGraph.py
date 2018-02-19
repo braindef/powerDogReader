@@ -18,8 +18,12 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 
 #debug variable, auf True wird mehr debug info angezeigt
-debug = False
-#debug = True
+#debug = False
+debug = True
+
+years = []
+months = []
+days = []
 
 
 day = 24 * 60 * 60
@@ -39,7 +43,7 @@ maxSteps = int((endTime-startTime)/step)
 basepath = "/home/toni2/"
 
 #PowerDOG String selection
-allStrings = ["B2_A2_S1","B2_A2_S2","B2_A3_S1","B2_A3_S2"]
+allStrings = []
 
 #Powerdog File selection, die anderen files werden aus diesen konsolidiert von Powerdog
 allFiles = ["global","event"]
@@ -56,8 +60,10 @@ def parseArgs():
 	parser = argparse.ArgumentParser(description='Liest Werte aus Powerdog FTP Daten aus z.B: $ python get.py --file "B2_A2_S1"')
         
         parser.add_argument('--create', action="store_true", dest="create", help='gibt an dass die RRD Files und das Configfile generiert werden')
+        parser.add_argument('--createFromHistory', action="store_true", dest="createFromHistory", help='generiert die RRD Files basierend an hand der Vergangenen Daten im FTP Verzeichnis')
         parser.add_argument('--update', action="store_true", dest="update", help='gibt an dass ein neuer Wert hinzugefügt werden soll')
         parser.add_argument('--render', action="store_true", dest="render", help='gibt an dass die Grafik(en) gerendert werden sollen')
+        parser.add_argument('--getStrings', action="store_true", dest="getStrings", help='gibt an dass die Grafik(en) gerendert werden sollen')
 
         #noch nicht implementiert
         parser.add_argument('--config', action="store", dest="configfile", help='gibt den Pfad des Configfiles an')
@@ -71,6 +77,10 @@ def parseArgs():
             if debug: print "Create"
             createAll()
 
+        if args.createFromHistory is True:
+            if debug: print "CreateFromHistory"
+            createAllFromHistory()
+
         if args.update is True:
             if debug: print "Update"
             updateAll()
@@ -81,9 +91,29 @@ def parseArgs():
             renderAll()
 
 
+        if args.getStrings is True:
+            #TODO start und end Timestamp angeben
+            if debug: print "getStrings()"
+            getAllStrings()
+
+
 def getAllStrings():
-    #TODO: ist im moment noch statisch angegeben, einen default wert von einem Tag wenn nichts angegeben
-    print "Not yet implemented"
+    print "Enter Function getAllStrings()"
+
+    global allStrings
+
+    mylist = []
+
+    files = glob.glob( basepath+'B*.txt')
+    #if debug: print files
+    for file in files:
+        file = os.path.basename(file)
+        file = file[0:8]
+        print file
+        mylist.append(file)
+    mylist = list(set(mylist))  #doppelte einträge aus liste löschen
+    if debug: print mylist
+    allStrings = mylist
 
 def createAll():
         if debug: print "Enter Function createAll()"
@@ -92,11 +122,47 @@ def createAll():
 			create(basepath+i, j)
 
 def createAllFromHistory():
-        if debug: print "Enter Function createAll()"
-	for i in allStrings:
-		for j in allGraphValues:
-			create(basepath+i, j)
 
+
+    if debug: print "Enter Function createAllFromHistory()"
+    print "ALLSTRINGS: " + str(allStrings)
+    for string in allStrings:
+        years=[]
+        months=[]
+        days=[]
+        print "STRING:" + string
+        files = glob.glob ( basepath + string + "_global_*.txt")
+        print str(string) + ": " + str(files)
+        for file in files:
+            print os.path.basename(file)
+            years.append (os.path.basename(file).split("_")[6][0:4])
+        print years
+        files = glob.glob ( basepath + string + "_global_" + "*" + min(years) + ".txt")
+        for file in files:
+            print os.path.basename(file)
+            months.append(os.path.basename(file).split("_")[4])
+        print months
+        
+        for y in range(int(min(years)), int(time.strftime("%Y"))+1):
+            print y
+            for m in range(1,13):
+                print str(y)+"-"+str(m)
+                for d in range(1,32):
+                    print str(y)+"-"+str(m)+"-"+str(d)
+                    parseFile(basepath + string + "_global_" + str(m) + "_" + str(d) + "_" + str(y) + ".txt")
+
+
+def parseFile(filename):
+    if os.path.exists(filename):
+        print "Parsing: " + filename
+        for value in allGraphValues:
+            create(filename, value)
+
+            with open(filename,'r') as f:
+                lines = f.readlines()
+            lines.sort()
+            for line in lines:
+                print line.split(";")[0]
 
 def updateAll():
         if debug: print "Enter Function updateAll()"
@@ -176,7 +242,20 @@ def update(filename, value):
 	myRRD = RRD(filename+"_"+value+".rrd")
 
 	#Wert in round robbin database eintragen
-        myRRD.bufferValue(time.time(), getCurrentValue(filename, value))          #DAS DANN WIEDER äNDERN
+        myRRD.bufferValue(time.time(), getCurrentValue(filename, value))
+	myRRD.update()
+        if debug: myRRD.info()
+
+
+
+def update(stringFilename, timestamp, valueKey, value):
+        if debug: print "Enter Function update(filename, value)"
+        
+        #round robbing database file öffnen
+	myRRD = RRD(stringFilename+"_"+value+".rrd")
+
+	#Wert in round robbin database eintragen
+        myRRD.bufferValue(timestamp, getCurrentValue(filename, valueKey))
 	myRRD.update()
         if debug: myRRD.info()
 
@@ -244,7 +323,7 @@ def getCurrentValue(filenameWithPath, column):
 
 
 
-
+getAllStrings()
 parseArgs()
 
 
