@@ -36,7 +36,7 @@ step = 300
 maxSteps = int((endTime-startTime)/step)
 
 #in welchem Verzeichnis wir die Powerdog FTP Daten holen
-basepath = "/home/toni/"
+basepath = "/home/toni2/"
 
 #PowerDOG String selection
 allStrings = ["B2_A2_S1","B2_A2_S2","B2_A3_S1","B2_A3_S2"]
@@ -91,6 +91,13 @@ def createAll():
 		for j in allGraphValues:
 			create(basepath+i, j)
 
+def createAllFromHistory():
+        if debug: print "Enter Function createAll()"
+	for i in allStrings:
+		for j in allGraphValues:
+			create(basepath+i, j)
+
+
 def updateAll():
         if debug: print "Enter Function updateAll()"
 	for i in allStrings:
@@ -133,6 +140,34 @@ def create(filename, value):
         if debug: myRRD.info()
 
 
+def createFromHistory(filename, value):
+        if debug: print "Enter Function create(filename, value)"
+	# Let's create and RRD file and dump some data in it
+	dss = []
+	ds1 = DS(dsName='kW', dsType='GAUGE', heartbeat=600) #alle 10 Minuten einen Wert
+	dss.append(ds1)
+
+        rras = [] #round robin archives mit, xff=0.5 also wenn 20 Minuten kein wert kommt wirds leer angezeigt:
+	rra1 = RRA(cf='AVERAGE', xff=0.5, steps=1, rows=144) #alle 10 Minuten ein Wert
+	rra2 = RRA(cf='AVERAGE', xff=0.5, steps=6, rows=24)  #24h mal 1h
+	rra3 = RRA(cf='AVERAGE', xff=0.5, steps=24, rows=30) #30 Tage mal 24h
+	rra4 = RRA(cf='AVERAGE', xff=0.5, steps=30, rows=12) #12 Monate mal 30 Tage
+	rra5 = RRA(cf='AVERAGE', xff=0.5, steps=12, rows=10) #10 Jahre mal 12 Monate
+	rras.append(rra1)
+	rras.append(rra2)
+	rras.append(rra3)
+	rras.append(rra4)
+	rras.append(rra5)
+
+        #round robbin database file anlegen mit der Startzeit startTime (jetzt)
+	myRRD = RRD(filename+"_"+value+".rrd", ds=dss, rra=rras, start=startTime)
+	myRRD.create()
+
+	myRRD.update()
+        if debug: myRRD.info()
+
+
+
 
 def update(filename, value):
         if debug: print "Enter Function update(filename, value)"
@@ -141,7 +176,7 @@ def update(filename, value):
 	myRRD = RRD(filename+"_"+value+".rrd")
 
 	#Wert in round robbin database eintragen
-        myRRD.bufferValue(time.time(), getValue(filename, value))          #DAS DANN WIEDER äNDERN
+        myRRD.bufferValue(time.time(), getCurrentValue(filename, value))          #DAS DANN WIEDER äNDERN
 	myRRD.update()
         if debug: myRRD.info()
 
@@ -178,8 +213,8 @@ def render(filename, value):
 	g.write()
 
 
-def getValue(filenameWithPath, column):
-    if debug: print "Enter Function getValue(filename, column)"
+def getCurrentValue(filenameWithPath, column):
+    if debug: print "Enter Function getCurrentValue(filename, column)"
     
     #alle dateien des Strings (im sinne von Solaranlagen String) finden
     if debug: print filename
