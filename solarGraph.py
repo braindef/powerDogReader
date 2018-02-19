@@ -126,18 +126,18 @@ def createAllFromHistory():
 
     if debug: print "Enter Function createAllFromHistory()"
     print "ALLSTRINGS: " + str(allStrings)
-    for string in allStrings:
+    for stringName in allStrings:
         years=[]
         months=[]
         days=[]
-        print "STRING:" + string
-        files = glob.glob ( baseDir + string + "_global_*.txt")
-        print str(string) + ": " + str(files)
+        print "STRING:" + stringName
+        files = glob.glob ( baseDir + stringName + "_global_*.txt")
+        print str(stringName) + ": " + str(files)
         for file in files:
             print os.path.basename(file)
             years.append (os.path.basename(file).split("_")[6][0:4])
         print years
-        files = glob.glob ( baseDir + string + "_global_" + "*" + min(years) + ".txt")
+        files = glob.glob ( baseDir + stringName + "_global_" + "*" + min(years) + ".txt")
         for file in files:
             print os.path.basename(file)
             months.append(os.path.basename(file).split("_")[4])
@@ -149,20 +149,23 @@ def createAllFromHistory():
                 print str(y)+"-"+str(m)
                 for d in range(1,32):
                     print str(y)+"-"+str(m)+"-"+str(d)
-                    parseFile(baseDir + string + "_global_" + str(m) + "_" + str(d) + "_" + str(y) + ".txt")
+                    parseFile(baseDir + stringName + "_global_" + str(m) + "_" + str(d) + "_" + str(y) + ".txt")
 
 
 def parseFile(filename):
     if os.path.exists(filename):
         print "Parsing: " + filename
-        for value in allGraphValues:
-            create(filename, value)
+        for key in allGraphValues:
+            #create(filename, key)
 
             with open(filename,'r') as f:
                 lines = f.readlines()
             lines.sort()
             for line in lines:
-                print line.split(";")[0]
+                for key in allGraphValues:
+                    print line.split(";")[0]
+                    print line.split(";")[allValues.index(key)]
+                    update(os.path.basename(filename)[0:8], line.split(";")[0], key, line.split(";")[allValues.index(key)])
 
 def updateAll():
         if debug: print "Enter Function updateAll()"
@@ -172,7 +175,7 @@ def updateAll():
 			update(stringName, time.time(), key, getCurrentValue(stringName, key) )
 
 def renderAll():
-        if debug: print "Enter Function createAll()"
+        if debug: print "Enter Function renderAll()"
 	for stringName in allStrings:
 		for key in allGraphValues:
 			render(stringName, key)
