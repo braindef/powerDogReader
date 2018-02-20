@@ -40,7 +40,7 @@ step = 300
 maxSteps = int((endTime-startTime)/step)
 
 #in welchem Verzeichnis wir die Powerdog FTP Daten holen
-baseDir = "/home/toni/"
+baseDir = "/home/toni/"         #needs trailing /
 
 #PowerDOG String selection
 allStrings = []
@@ -79,7 +79,7 @@ def parseArgs():
 
         if args.createFromHistory is True:
             if debug: print "CreateFromHistory"
-            createAllFromHistory()
+            createAllFromHistory2()
 
         if args.update is True:
             if debug: print "Update"
@@ -121,7 +121,33 @@ def createAll():
 		for key in allGraphValues:
 			create(stringName, key)
 
+
+def createAllFromHistory2():
+
+    if debug: print "Enter Function createAllFromHistory()"
+    createAll()
+    for stringName in allStrings:
+        contentOfAllFiles = []
+        line = []
+        files = glob.glob ( baseDir + stringName + "_global_*.txt")
+        for file in files:
+            with open(file) as f:
+                for line in f:
+                    if "timestamp" in line: continue
+                    contentOfAllFiles.append(line)
+                #print allFiles
+        #print lines
+        sortedList = sorted(list(set(contentOfAllFiles)))   #sort and remove duplicates since the PowerDOG saves values duplicated
+        for s in sortedList:
+            for key in allGraphValues:
+                #print "test"
+
+                if debug: print (stringName +" "+ s.split(";")[0] +" "+ key +" "+ s.split(";")[allValues.index(key)])
+                update(stringName, s.split(";")[0], key, s.split(";")[allValues.index(key)])
+
+
 def createAllFromHistory():
+#deprecated use createAllFromHistory2()
 
     createAll()
     if debug: print "Enter Function createAllFromHistory()"
