@@ -34,6 +34,7 @@ half = 365 * day / 2
 year = 365 * day
 
 endTime = int(round(time.time()))
+startTime = endTime - (10 * 60 * 60)
 delta = 2 * day
 startTime = endTime - delta
 step = 300
@@ -65,10 +66,25 @@ def parseArgs():
         parser.add_argument('--render', action="store_true", dest="render", help='gibt an dass die Grafik(en) gerendert werden sollen')
         parser.add_argument('--getStrings', action="store_true", dest="getStrings", help='gibt an dass die Grafik(en) gerendert werden sollen')
 
+        parser.add_argument('--starttime', action="store", dest="starttime", help='gibt den startzeitpunkt für die Grafik an')
+        parser.add_argument('--endtime', action="store", dest="endtime", help='gibt den startzeitpunkt für die Grafik an')
+
+
         #noch nicht implementiert
         parser.add_argument('--config', action="store", dest="configfile", help='gibt den Pfad des Configfiles an')
 
 	args = parser.parse_args()
+
+        global startTime
+        global endTime
+
+        if not (args.starttime is None):
+            startTime = args.starttime
+            print startTime
+
+        if not (args.endtime is None):
+            endTime = args.endtime
+            print endTime
 
         if (args.create is None and args.update is None and args.graph is None):
             print "bitte angeben ob --create, --update oder --render"
@@ -90,13 +106,12 @@ def parseArgs():
             if debug: print "Render"
             renderAll()
 
+#        if args.getStrings is True:
+#            if debug: print "getAllStrings()"
+#            getAllStrings()
 
-        if args.getStrings is True:
-            #TODO start und end Timestamp angeben
-            if debug: print "getStrings()"
-            getAllStrings()
 
-"""Korrigiert"""
+
 def getAllStrings():
     print "Enter Function getAllStrings()"
 
@@ -104,7 +119,7 @@ def getAllStrings():
 
     mylist = []
 
-    files = glob.glob( baseDir+'B*.txt')
+    files = glob.glob( baseDir + 'B*.txt')
     #if debug: print files
     for file in files:
         file = os.path.basename(file)
@@ -112,7 +127,7 @@ def getAllStrings():
         if debug: print file
         mylist.append(file)
     mylist = list(set(mylist))  #doppelte einträge aus liste löschen
-    if debug: print mylist
+    print mylist
     allStrings = mylist
 
 def createAll():
@@ -205,7 +220,7 @@ def renderAll():
         if debug: print "Enter Function renderAll()"
 	for stringName in allStrings:
 		for key in allGraphValues:
-			render(stringName, key)
+			render(stringName, key, startTime, endTime)
 
 
 
@@ -255,7 +270,7 @@ def update(stringName, timestamp, key, value):
 
 
 
-def render(stringName, key):
+def render(stringName, key, startTime, endTime):
         if debug: print "Enter Function render(filename, value)"
 	
         #balken zeichnen
@@ -278,7 +293,7 @@ def render(stringName, key):
 	ca.arrow = '#FFFFFF'
 
 	# Now that we've got everything set up, let's make a graph
-	startTime = endTime - (10 * 60 * 60) #10h anzeigen, sollte noch variabel sein
+	#startTime = endTime - (10 * 60 * 60) #10h anzeigen, sollte noch variabel sein
 	g = Graph(baseDir + stringName + "_" + key + ".png", start=startTime, end=endTime, vertical_label='data', color=ca)
 	g.data.extend([def1, area1, line1])
 
