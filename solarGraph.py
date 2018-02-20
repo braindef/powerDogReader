@@ -18,8 +18,8 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 
 #debug variable, auf True wird mehr debug info angezeigt
-#debug = False
-debug = True
+debug = False
+#debug = True
 
 years = []
 months = []
@@ -109,7 +109,7 @@ def getAllStrings():
     for file in files:
         file = os.path.basename(file)
         file = file[0:8]
-        print file
+        if debug: print file
         mylist.append(file)
     mylist = list(set(mylist))  #doppelte einträge aus liste löschen
     if debug: print mylist
@@ -125,30 +125,30 @@ def createAllFromHistory():
 
     createAll()
     if debug: print "Enter Function createAllFromHistory()"
-    print "ALLSTRINGS: " + str(allStrings)
+    if debug: print "ALLSTRINGS: " + str(allStrings)
     for stringName in allStrings:
         years=[]
         months=[]
         days=[]
-        print "STRING:" + stringName
+        if debug: print "STRING:" + stringName
         files = glob.glob ( baseDir + stringName + "_global_*.txt")
-        print str(stringName) + ": " + str(files)
+        if debug: print str(stringName) + ": " + str(files)
         for file in files:
-            print os.path.basename(file)
+            if debug: print os.path.basename(file)
             years.append (os.path.basename(file).split("_")[6][0:4])
-        print years
+        if debug: print years
         files = glob.glob ( baseDir + stringName + "_global_" + "*" + min(years) + ".txt")
         for file in files:
-            print os.path.basename(file)
+            if debug: print os.path.basename(file)
             months.append(os.path.basename(file).split("_")[4])
-        print months
+        if debug: print months
         
         for y in range(int(min(years)), int(time.strftime("%Y"))+1):
-            print y
+            if debug: print y
             for m in range(1,13):
-                print str(y)+"-"+str(m)
+                if debug: print str(y)+"-"+str(m)
                 for d in range(1,32):
-                    print str(y)+"-"+str(m)+"-"+str(d)
+                    if debug: print str(y)+"-"+str(m)+"-"+str(d)
                     parseDataFile(baseDir + stringName + "_global_" + str(m) + "_" + str(d) + "_" + str(y) + ".txt")
 
 
@@ -164,8 +164,8 @@ def parseDataFile(filename):
             for line in lines:
                 if "timestamp" in line: continue
                 for key in allGraphValues:
-                    print line.split(";")[0]
-                    print line.split(";")[allValues.index(key)]
+                    if debug: print line.split(";")[0]
+                    if debug: print line.split(";")[allValues.index(key)]
                     update(os.path.basename(filename)[0:8], line.split(";")[0], key, line.split(";")[allValues.index(key)])
 
 def updateAll():
